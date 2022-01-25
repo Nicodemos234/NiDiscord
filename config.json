@@ -1,5 +1,5 @@
 {
-  "name": "Aluracord - Matrix (peas)",
+  "name": "NiCord - Brba (nicodemos234)",
   "stickers": [
     "http://2.bp.blogspot.com/-d21tffsTIQo/U_H9QjC69gI/AAAAAAAAKqM/wnvOyUr6a_I/s1600/Pikachu%2B2.gif",
     "https://media1.giphy.com/media/BdghqxNFV4efm/200.gif",
@@ -11,16 +11,16 @@
   "theme": {
     "colors": {
       "primary": {
-        "050": "#E3F9E5",
-        "100": "#C1EAC5",
-        "200": "#A3D9A5",
-        "300": "#7BC47F",
-        "400": "#57AE5B",
-        "500": "#3F9142",
-        "600": "#2F8132",
-        "700": "#207227",
-        "800": "#0E5814",
-        "900": "#05400A"
+        "050": "#FBF1DA",
+        "100": "#F0CE7F",
+        "200": "#ECC76D",
+        "300": "#ECC05B",
+        "400": "#EAB948",
+        "500": "#E6AF2E",
+        "600": "#DBA11A",
+        "700": "#B78615",
+        "800": "#A47913",
+        "900": "#6E510D"
       },
       "neutrals": {
         "000": "#FFFFFF",

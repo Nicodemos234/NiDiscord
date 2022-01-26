@@ -1,4 +1,4 @@
-import { Box, Text, TextField, Image, Button } from '@skynexui/components';
+import { Box, Text, TextField, Image, Button, Icon } from '@skynexui/components';
 import React from 'react';
 import appConfig from '../config.json';
 
@@ -20,7 +20,7 @@ export default function ChatPage() {
       styleSheet={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         backgroundColor: appConfig.theme.colors.primary[500],
-        backgroundImage: `url(https://virtualbackgrounds.site/wp-content/uploads/2020/08/the-matrix-digital-rain.jpg)`,
+        backgroundImage: `url(https://i.imgur.com/pzd56iI.jpg)`,
         backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundBlendMode: 'multiply',
         color: appConfig.theme.colors.neutrals['000']
       }}
@@ -53,7 +53,7 @@ export default function ChatPage() {
           }}
         >
 
-          <MessageList mensagens={listaMensagem} />
+          <MessageList mensagens={listaMensagem} setMensagens={setListaMensagem} />
 
           <Box
             as="form"
@@ -84,6 +84,16 @@ export default function ChatPage() {
                 color: appConfig.theme.colors.neutrals[200],
               }}
             />
+            <Button
+              buttonColors={{
+                contrastColor: appConfig.theme.colors.neutrals["000"],
+                mainColor: appConfig.theme.colors.primary[500],
+                mainColorLight: appConfig.theme.colors.primary[400],
+                mainColorStrong: appConfig.theme.colors.primary[600],
+              }}
+              label='Enviar'
+              onClick={() => handleNovaMensagem(mensagem)}
+            />
           </Box>
         </Box>
       </Box>
@@ -109,7 +119,7 @@ function Header() {
   )
 }
 
-function MessageList({ mensagens }) {
+function MessageList({ mensagens, setMensagens }) {
   console.log(mensagens)
   return (
     <Box
@@ -135,8 +145,15 @@ function MessageList({ mensagens }) {
             hover: {
               backgroundColor: appConfig.theme.colors.neutrals[700],
             },
+            position: 'relative'
           }}
         >
+          <Button
+            onClick={() => setMensagens(mensagens => mensagens
+              .filter(mensagemDaLista => mensagemDaLista.id !== mensagem.id))}
+            label='X'
+            styleSheet={{ position: 'absolute', top: '10px', right: '10px', backgroundColor: 'transparent' }}
+          />
           <Box
             styleSheet={{
               marginBottom: '8px',

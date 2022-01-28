@@ -1,4 +1,5 @@
-import { Box, Text, TextField, Image, Button, Icon } from '@skynexui/components';
+import NextImage from 'next/image'
+import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import { createClient } from '@supabase/supabase-js';
 import React from 'react';
 import appConfig from '../config.json';
@@ -11,6 +12,7 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 export default function ChatPage() {
   const [mensagem, setMensagem] = React.useState('')
   const [listaMensagem, setListaMensagem] = React.useState([])
+  const [loading, setLoading] = React.useState(true)
 
   React.useEffect(() => {
     supabaseClient
@@ -19,6 +21,7 @@ export default function ChatPage() {
       .order('id', { ascending: false })
       .then(({ data }) => {
         setListaMensagem(data)
+        setLoading(false)
       })
   }, [])
 
@@ -42,6 +45,7 @@ export default function ChatPage() {
         color: appConfig.theme.colors.neutrals['000']
       }}
     >
+
       <Box
         styleSheet={{
           display: 'flex',
@@ -69,9 +73,8 @@ export default function ChatPage() {
             padding: '16px',
           }}
         >
-
+          {loading && <Loading />}
           <MessageList mensagens={listaMensagem} setMensagens={setListaMensagem} />
-
           <Box
             as="form"
             styleSheet={{
@@ -136,7 +139,46 @@ function Header() {
   )
 }
 
+function Loading() {
+  return (<div className='pauloLoading'>
+    <NextImage src='/assets/paulo.png' width='366' height='395' alt='Paulo' />
+    <style jsx>{`
+    .pauloLoading {
+      position: absolute;
+      top: calc(50% - 197px);
+      left: calc(50% - 183px);
+      z-index: 10;
+      -webkit-animation:spin 4s linear infinite;
+      -moz-animation:spin 4s linear infinite;
+      animation:spin 1s linear infinite;
+    }
+    @-moz-keyframes spin { 
+      100% { -moz-transform: rotate(360deg); } 
+    }
+    @-webkit-keyframes spin { 
+        100% { -webkit-transform: rotate(360deg); } 
+    }
+    @keyframes spin { 
+        100% { 
+            -webkit-transform: rotate(360deg); 
+            transform:rotate(360deg); 
+        } 
+    }
+  `}</style>
+  </div>)
+}
+
 function MessageList({ mensagens, setMensagens }) {
+  const [tooltipContent, setTooltipContent] = React.useState({})
+  const handleShowDetailedUserInfo = async (mensagem) => {
+    const url = `https://api.github.com/users/${mensagem.de}`
+    const response = await fetch(url)
+    const data = await response.json()
+    setTooltipContent({...data, id: mensagem.id})
+  }
+  const handleHideDetaileduserInfo = () => {
+    setTooltipContent({})
+  }
   return (
     <Box
       tag="ul"
@@ -175,16 +217,34 @@ function MessageList({ mensagens, setMensagens }) {
               marginBottom: '8px',
             }}
           >
-            <Image
-              styleSheet={{
-                width: '20px',
-                height: '20px',
-                borderRadius: '50%',
-                display: 'inline-block',
-                marginRight: '8px',
-              }}
-              src={`https://github.com/${mensagem.de}.png`}
-            />
+            <div className='tooltipWrapper'>
+             {tooltipContent.id === mensagem.id &&  <div className='tooltip' id={`tooltip-${mensagem.id}`}>
+                <Image
+                  styleSheet={{
+                    width: '50px',
+                    height: '50px',
+                    borderRadius: '50%',
+                    display: 'inline-block',
+                    marginRight: '8px',
+                  }}
+                  src={tooltipContent.avatar_url}
+                /><br></br>
+                followers: {tooltipContent.followers}<br></br>
+                following: {tooltipContent.following}
+              </div>}
+              <div className='imageWrapper' onMouseEnter={() => handleShowDetailedUserInfo(mensagem)} onMouseLeave={handleHideDetaileduserInfo}>
+                <Image
+                  styleSheet={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    display: 'inline-block',
+                    marginRight: '8px',
+                  }}
+                  src={`https://github.com/${mensagem.de}.png`}
+                />
+              </div>
+            </div>
             <Text tag="strong">
               {mensagem.de}
             </Text>
@@ -202,6 +262,20 @@ function MessageList({ mensagens, setMensagens }) {
           {mensagem.mensagem}
         </Text>
       ))}
+      <style jsx>{`
+         .tooltipWrapper {
+           position: relative;
+         }
+         .tooltip {
+           position: absolute;
+           top: -120px;
+           z-index: 10;
+           background-color: ${appConfig.theme.colors.neutrals[900]};
+           color: white;
+           border-radius: 10px;
+           padding: 10px;
+         }
+  `}</style>
     </Box>
   )
 }

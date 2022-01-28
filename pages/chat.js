@@ -1,8 +1,10 @@
 import NextImage from 'next/image'
+import { useRouter } from 'next/router'
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import { createClient } from '@supabase/supabase-js';
 import React from 'react';
 import appConfig from '../config.json';
+import { ButtonSendSticker } from '../src/components/ButtonSendSticker'
 
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzMyMzI5MCwiZXhwIjoxOTU4ODk5MjkwfQ.mD0Y8H2Ery-eMlsYKvbyBa7V7DEPLwF7QafBzPnOrks'
 const SUPABASE_URL = 'https://lvnswpqoxbkirqipktdw.supabase.co'
@@ -10,9 +12,20 @@ const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 
 export default function ChatPage() {
+  const roteamento = useRouter()
+  const usuarioLogado = roteamento.query.username
   const [mensagem, setMensagem] = React.useState('')
   const [listaMensagem, setListaMensagem] = React.useState([])
   const [loading, setLoading] = React.useState(true)
+
+  const listenNewMessages = (addMessage) => {
+    return supabaseClient
+      .from('mensagens')
+      .on('INSERT', (response) => {
+        addMessage(response.new)
+      })
+      .subscribe()
+  }
 
   React.useEffect(() => {
     supabaseClient
@@ -23,16 +36,17 @@ export default function ChatPage() {
         setListaMensagem(data)
         setLoading(false)
       })
+    listenNewMessages((mensagem) => { setListaMensagem(listaMensagens => [mensagem, ...listaMensagens]) })
   }, [])
 
   const handleNovaMensagem = (novaMensagem) => {
     const mensagem = {
-      de: 'Nicodemos234',
-      mensagem: novaMensagem
+      de: usuarioLogado,
+      texto: novaMensagem
     }
 
-    supabaseClient.from('mensagens').insert([mensagem])
-      .then(({ data }) => setListaMensagem(listaMensagens => [data[0], ...listaMensagens]))
+    supabaseClient.from('mensagens').insert([mensagem]).then((data) => console.log(data))
+
     setMensagem('')
   }
   return (
@@ -104,6 +118,7 @@ export default function ChatPage() {
                 color: appConfig.theme.colors.neutrals[200],
               }}
             />
+            <ButtonSendSticker onStickerClick={(sticker) => handleNovaMensagem(`:sticker:${sticker}`)} />
             <Button
               buttonColors={{
                 contrastColor: appConfig.theme.colors.neutrals["000"],
@@ -174,7 +189,7 @@ function MessageList({ mensagens, setMensagens }) {
     const url = `https://api.github.com/users/${mensagem.de}`
     const response = await fetch(url)
     const data = await response.json()
-    setTooltipContent({...data, id: mensagem.id})
+    setTooltipContent({ ...data, id: mensagem.id })
   }
   const handleHideDetaileduserInfo = () => {
     setTooltipContent({})
@@ -218,7 +233,7 @@ function MessageList({ mensagens, setMensagens }) {
             }}
           >
             <div className='tooltipWrapper'>
-             {tooltipContent.id === mensagem.id &&  <div className='tooltip' id={`tooltip-${mensagem.id}`}>
+              {tooltipContent.id === mensagem.id && <div className='tooltip' id={`tooltip-${mensagem.id}`}>
                 <Image
                   styleSheet={{
                     width: '50px',
@@ -259,7 +274,9 @@ function MessageList({ mensagens, setMensagens }) {
               {(new Date().toLocaleDateString())}
             </Text>
           </Box>
-          {mensagem.mensagem}
+          {mensagem.texto.startsWith(':sticker:')
+            ? <Image src={mensagem.texto.replace(':sticker:', ' ')} />
+            : mensagem.texto}
         </Text>
       ))}
       <style jsx>{`
